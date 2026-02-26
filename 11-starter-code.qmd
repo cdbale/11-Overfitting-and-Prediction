@@ -147,8 +147,8 @@ Based on training data predictions, which model is better/more accurate? Is this
 
 ## Wait...What Am I Supposed to Do?
 
-1. *Train* models on *Train* Data
-2. *Choose* your best model after *Testing* it on *Test* Data
+1.  *Train* models on *Train* Data
+2.  *Choose* your best model after *Testing* it on *Test* Data
 
 ## Live Coding
 
@@ -167,8 +167,6 @@ ifood <- ifood |>
   mutate(total_spend = MntWines + MntFruits + MntMeatProducts + MntFishProducts + MntSweetProducts + MntGoldProds)
 ```
 
-
 ```{r}
 
 ```
-
