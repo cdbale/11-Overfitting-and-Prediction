@@ -12,7 +12,8 @@ library(tidyverse)
 library(tidymodels)
 
 # Import soup data and select the Sales, Any_Disp_Spend, Any_Feat_Spend, and Any_Price_Decr_Spend variables
-
+soup_data <- read_csv("soup_data.csv") |>
+  select(Sales, Any_Disp_Spend, Any_Feat_Spend, Any_Price_Decr_Spend)
 ```
 
 # For Illustrative Purposes ONLY!
@@ -110,7 +111,7 @@ Now that we have trained our models, we use `predict()` for model comparison whe
 fit_simple |> 
   predict(new_data = testing(soup_split)) |>
   bind_cols(testing(soup_split)) |>
-  rmse(truth = Sales, estimate = .pred)
+  mae(truth = Sales, estimate = .pred)
 ```
 
 ```{r}
@@ -118,7 +119,7 @@ fit_simple |>
 fit_complex |> 
   predict(new_data = testing(soup_split)) |>
   bind_cols(testing(soup_split)) |>
-  rmse(truth = Sales, estimate = .pred)
+  mae(truth = Sales, estimate = .pred)
 ```
 
 According to the test data RMSE, which model gives the best fit?
@@ -167,6 +168,74 @@ ifood <- ifood |>
   mutate(total_spend = MntWines + MntFruits + MntMeatProducts + MntFishProducts + MntSweetProducts + MntGoldProds)
 ```
 
-```{r}
+Split the data.
 
+```{r}
+set.seed(916)
+
+ifood_split <- initial_split(ifood, prop = 0.90)
 ```
+
+We want to construct two models, one will be complex and the other simple.
+
+Complex model:
+
+- Income
+- Birth_Year
+- NumWebVisitsMonth
+- Complain
+- Kidhome
+- Teenhome
+- Recency
+
+Carson model:
+
+- income
+- recency
+- birth_year
+
+```{r}
+# Fit the simple model with training data.
+fit_carson <- linear_reg() |> 
+  set_engine("lm") |> 
+  fit(
+    total_spend ~ Income + Recency + Year_Birth, 
+    data = training(ifood_split)
+  )
+
+# Fit the complex model with training data
+fit_complex <- linear_reg() |> 
+  set_engine("lm") |> 
+  fit(
+    total_spend ~ Income + Recency + Year_Birth + NumWebVisitsMonth + Complain + Kidhome + Teenhome, 
+    data = training(ifood_split)
+  )
+```
+
+Evaluate models on the test data.
+
+```{r}
+# Compute predictive fit for simple model
+fit_carson |> 
+  predict(new_data = testing(ifood_split)) |>
+  bind_cols(testing(ifood_split)) |>
+  mae(truth = total_spend, estimate = .pred)
+```
+
+```{r}
+# Compute predictive fit for simple model
+fit_complex |> 
+  predict(new_data = testing(ifood_split)) |>
+  bind_cols(testing(ifood_split)) |>
+  mae(truth = total_spend, estimate = .pred)
+```
+
+Move on to interpreting the model coefficients.
+
+```{r}
+fit_complex |>
+  tidy(conf.int = TRUE)
+```
+
+
+
